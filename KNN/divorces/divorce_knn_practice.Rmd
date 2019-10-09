@@ -1,0 +1,64 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# KNN Classifier
+
+In this practice we will use "caret" library to formulate a classification model.
+
+## Library imports
+
+```{r results='hide'}
+library(tidyverse)
+library(caret)
+```
+
+## Reading dataset
+
+```{r results='hide'}
+dataset <- read.csv2("divorce/divorce.csv", sep = ",", dec = ".", quote = "\"", header = TRUE)
+
+# Extract some attributes
+dataset_reduction <- dataset[c("Atr1", "Atr2", "Atr3", "Atr4", "Class")]
+
+dataset_reduction <- dataset_reduction %>% mutate(
+  Class = as.factor(Class)
+)
+```
+
+## Descriptive information
+
+```{r}
+# Datatypes and basic descriptive information
+head(dataset_reduction)
+summary(dataset_reduction)
+
+# Data distribution
+boxplot(dataset_reduction[, !(names(dataset_reduction) %in% c("Class"))])
+
+# Barchart from data
+ggplot(dataset_reduction) + 
+  geom_bar(aes(Atr1, fill = Class)) +
+  labs(title = "Number of persons by Atr1", x = "Attribute 1", y = "Number of persons")
+```
+
+## Training model
+
+```{r}
+train_control = trainControl(method = "cv", number = 10)
+
+knn_model = train(Class ~ .,
+                  data = dataset_reduction,
+                  method = "knn",
+                  tuneGrid = expand.grid(k = 1:30),
+                  trControl = train_control,
+                  preProcess = c("scale", "center"))
+```
+
+# Model results
+
+```{r}
+plot(knn_model)
+```
+
