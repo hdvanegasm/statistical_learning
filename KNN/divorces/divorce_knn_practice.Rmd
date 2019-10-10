@@ -18,13 +18,6 @@ library(caret)
 
 ```{r results='hide'}
 dataset <- read.csv2("divorce/divorce.csv", sep = ",", dec = ".", quote = "\"", header = TRUE)
-
-# Extract some attributes
-dataset_reduction <- dataset[c("Atr1", "Atr2", "Atr3", "Atr4", "Class")]
-
-dataset_reduction <- dataset_reduction %>% mutate(
-  Class = as.factor(Class)
-)
 ```
 
 ## Descriptive information
@@ -32,15 +25,19 @@ dataset_reduction <- dataset_reduction %>% mutate(
 ```{r}
 # Datatypes and basic descriptive information
 head(dataset_reduction)
+
+# Basic information
 summary(dataset_reduction)
 
-# Data distribution
-boxplot(dataset_reduction[, !(names(dataset_reduction) %in% c("Class"))])
+# Standard deviation
+apply(dataset, 2, sd)
 
-# Barchart from data
-ggplot(dataset_reduction) + 
-  geom_bar(aes(Atr1, fill = Class)) +
-  labs(title = "Number of persons by Atr1", x = "Attribute 1", y = "Number of persons")
+# Correlation matrix
+library(RColorBrewer)
+library(corrplot)
+
+correlation <- cor(dataset)
+corrplot(correlation)
 ```
 
 ## Training model
@@ -48,8 +45,15 @@ ggplot(dataset_reduction) +
 ```{r}
 train_control = trainControl(method = "cv", number = 10)
 
-knn_model = train(Class ~ .,
+knn_model_reduction = train(Class ~ .,
                   data = dataset_reduction,
+                  method = "knn",
+                  tuneGrid = expand.grid(k = 1:30),
+                  trControl = train_control,
+                  preProcess = c("scale", "center"))
+
+knn_model = train(Class ~ .,
+                  data = dataset,
                   method = "knn",
                   tuneGrid = expand.grid(k = 1:30),
                   trControl = train_control,
@@ -59,6 +63,15 @@ knn_model = train(Class ~ .,
 # Model results
 
 ```{r}
-plot(knn_model)
+plot(knn_model_reduction)
+plot(knn_model, ylim = c(0.8, 1))
+```
+
+# Some predictions
+
+```{r}
+# Data to predict
+data_test <- data.frame(Atr1 = 1, Atr2 = 1, Atr3 = 1)
+prediction <- predict(knn_model_reduction, newdata = data_test)
 ```
 
