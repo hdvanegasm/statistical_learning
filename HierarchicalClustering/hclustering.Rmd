@@ -1,0 +1,93 @@
+---
+title: "Hierarchical Clustering"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+```
+
+
+In this example, we will use the mtcars dataset.
+
+```{r}
+dataset <- mtcars[-c(8, 9)]
+head(dataset)
+dim(dataset)
+```
+
+# Descriptive analysis
+
+
+## Standard deviations
+
+```{r}
+sqrt(diag(cov(dataset)))
+```
+
+## Descriptive analysis
+
+```{r}
+summary(dataset)
+```
+
+## Preparing dataset and distances
+
+```{r}
+dataset_scale <- scale(dataset)
+distances <- dist(dataset_scale)
+```
+
+## Clustering
+
+```{r}
+clusters <- hclust(distances)
+```
+
+## Plots
+
+```{r}
+plot(clusters)
+```
+
+## Selection of groups
+
+```{r}
+clusters_4 <- cutree(clusters, k = 4)
+
+# Graphics
+plot(clusters)
+rect.hclust(clusters, k = 4)
+```
+
+## Discrete analysis over groups
+
+```{r}
+cluster_1 <- dataset[which(clusters_4 == 1),]
+cluster_2 <- dataset[which(clusters_4 == 2),]
+cluster_3 <- dataset[which(clusters_4 == 3),]
+cluster_4 <- dataset[which(clusters_4 == 4),]
+```
+
+```{r}
+row.names(cluster_1)
+row.names(cluster_2)
+row.names(cluster_3)
+row.names(cluster_4)
+```
+
+
+```{r}
+# Descriptive analysis for clusters
+summary(cluster_1)
+print("================================================================")
+summary(cluster_2)
+print("================================================================")
+summary(cluster_3)
+print("================================================================")
+summary(cluster_4)
+```
+```
+
+
+
